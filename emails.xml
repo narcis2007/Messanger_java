@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Emails>
+    <Email id="2">
+        <title>1</title>
+        <content>1</content>
+        <owner>admin</owner>
+        <receiver>asd</receiver>
+        <status>SENT</status>
+    </Email>
+    <Email id="8">
+        <title>11</title>
+        <content>22</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="7">
+        <title>a</title>
+        <content>3</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="3">
+        <title>dfdgfdg</title>
+        <content>srw3</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="4">
+        <title>qwerty</title>
+        <content>1234</content>
+        <owner>admin</owner>
+        <receiver>ttttt</receiver>
+        <status>SENT</status>
+    </Email>
+    <Email id="7">
+        <title>z</title>
+        <content>x</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="8">
+        <title>c</title>
+        <content>v</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="10">
+        <title>w</title>
+        <content>2</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+    <Email id="11">
+        <title>ert</title>
+        <content>56</content>
+        <owner>admin</owner>
+        <receiver>null</receiver>
+        <status>UNSENT</status>
+    </Email>
+</Emails>
