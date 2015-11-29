@@ -1,0 +1,11 @@
+<beans>
+    <!--KeepUI keepUi = new KeepUI();-->
+	<bean id="console" class="messanger_client.ui.ConsoleUI">
+        <property name="service" ref="service"/>
+    </bean>
+	<bean id="service" class="messanger_client.service.ClientService">
+        <property name="rpcClient" ref="rpcClient"/>
+    </bean>
+	<bean id="rpcClient" class="messanger_client.net.RpcClient"/>
+	
+</beans>

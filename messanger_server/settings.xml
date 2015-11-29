@@ -1,0 +1,17 @@
+<beans>
+    <bean id="rpcServer" class="messanger_server.net.RpcServer">
+		<property name="service" ref="service"/>
+	</bean>
+	<bean id="service" class="messanger_server.service.MessangerService">
+        <property name="userRepository" ref="userRepository"/>
+		<property name="emailRepository" ref="emailRepository"/>
+    </bean>
+	<bean id="emailRepository" class="messanger_server.repository.EmailRepository">
+        <property name="validator" ref="emailValidator"/>
+    </bean>
+    <bean id="emailValidator" class="messanger_api.models.validators.EmailValidator"/>
+    <bean id="userRepository" class="messanger_server.repository.UserRepository">
+        <property name="validator" ref="userValidator"/>
+    </bean>
+	<bean id="userValidator" class="messanger_api.models.validators.UserValidator"/>
+</beans>
