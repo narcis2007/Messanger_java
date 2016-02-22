@@ -6,7 +6,7 @@ Desktop Client:
     Asynchronous Api calls,
     Requires authentication
 
-Web Client(still working on this):
+Web Client:
     Spring MVC + React.js,
     Requires authentication
 
