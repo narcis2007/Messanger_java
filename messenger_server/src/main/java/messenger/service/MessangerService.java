@@ -80,7 +80,9 @@ public class MessangerService  {
 
 	@RequestMapping(value = "/getMessageCountByReceiver", method = RequestMethod.POST)
 	public Integer getMessageCountByReceiver(@RequestBody Map<String,String> data) {
-		String receiver=data.get("receiver");
+//		String receiver=data.get("receiver");
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String receiver= auth.getName();
 		return emailRepository.count(receiver);
 
 	}
@@ -216,17 +218,14 @@ public class MessangerService  {
 
 	@RequestMapping(value = "/get_page", method = RequestMethod.POST)
 	public ResponseEntity<List<Email>> getPage(@RequestBody Map<String,String> data) {
-		try {
-			synchronized (this) {
-				wait(1000);
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+
 
 		int pageNr=Integer.valueOf(data.get("pageNr"));
 		int pageSize=Integer.valueOf(data.get("pageSize"));
-		String receiver=data.get("receiver");
+//		String receiver=data.get("receiver");
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String receiver= auth.getName();
+		log.info(pageNr+" "+pageSize+" "+receiver);
 		List<Email> page= emailRepository.getPage(receiver,pageNr,pageSize);
 		if(page==null)
 			return new ResponseEntity<List<Email>>(HttpStatus.BAD_REQUEST);
@@ -242,13 +241,7 @@ public class MessangerService  {
 	}
 	@RequestMapping(value = "/get_users", method = RequestMethod.GET)
 	public List<User> getUsers() {
-		try {
-			synchronized (this) {
-				wait(1000);
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+
 		return Collections.makeList(userRepository.getAll());
 
 	}
