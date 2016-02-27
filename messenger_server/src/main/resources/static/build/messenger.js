@@ -8,12 +8,24 @@
 var MessengerApp = React.createClass({
     displayName: "MessengerApp",
     pageInfo:{pageSize:2,pageNr:0},
+    loadingMessages:true,
     getInitialState: function () {
-        this.refreshMessages();
+        this.refreshMessages(null);
         this.refreshUsers();
-        return { messages: [],users:[],messageCount:0,numberOfPages:0,disableNext:true,disablePrev:true };
+        return { messages: [],users:[],messageCount:0,numberOfPages:0 };
     },
     render: function () {
+        var formElement=React.createElement(MessageForm, { users:this.state.users,onMessageSubmit: this.handleMessageSubmit });
+        var messageListElement=React.createElement(MessageList, { messages: this.state.messages,nextPage:this.nextPage,prevPage:this.prevPage,pageInfo:this.pageInfo,numberOfPages:this.state.numberOfPages });
+
+        //if(this.state.users.length==0)
+        //    formElement=this.renderLoading();
+        console.log("render");
+        console.log("this.loadingMessages="+this.loadingMessages);
+        if(this.loadingMessages===true){
+            messageListElement=this.renderLoading();
+            console.log("should have displayed loading...");
+        }
         return React.createElement(
             "div",
             null,
@@ -22,25 +34,57 @@ var MessengerApp = React.createClass({
                 null,
                 "messages"
             ),
-            React.createElement(MessageForm, { users:this.state.users,onMessageSubmit: this.handleMessageSubmit }),
-            React.createElement(MessageList, { messages: this.state.messages,nextPage:this.nextPage,prevPage:this.prevPage,disableNext:this.state.disableNext,disablePrev:this.state.disablePrev }),
-            React.createElement(PageCountIndicator, { pageNr:this.pageInfo.pageNr,numberOfPages:this.state.numberOfPages})
+            formElement,
+            messageListElement
         );
+    },
+    renderLoading: function () {
+        return React.createElement(
+            "div",
+            null,
+            "Loading Data from Server",
+            React.createElement(
+                Button,{name:"Cancel Loading",onClick:this.cancelLoading,disabled:false}
+            )
+        );
+    },
+    cancelLoading:function(){
+        this.loadingMessages=false;
+        this.forceUpdate();
+        console.log("loading cancelled");
     },
     handleMessageSubmit:function(message){
 
         messangerService.sendMessage(message).then(function(){
-            this.refreshMessages();
+            this.refreshMessages(null);
         }.bind(this));
 
     },
-    refreshMessages: function() {
+    refreshMessages: function(onCancel) {
+        this.loadingMessages=true;
+        this.forceUpdate();
+        console.log("trying to refresh messages");
+        messangerService.getPage(this.pageInfo).then(function(data) {
+            console.log("about to refresh");
+            if (this.loadingMessages === true) {
 
-        messangerService.getPage(this.pageInfo).then(function(data){
-            this.setState({messages: data});
-            console.log("refreshing messages...");
+                this.setState({messages: data});
+                console.log("refreshing messages...");
+
+                this.refreshMessageCount();
+                this.loadingMessages=false;
+            }
+            else {
+                if(onCancel!=null)
+                     onCancel();
+                this.forceUpdate();
+                console.log("this.loadingMessages= "+this.loadingMessages);
+            }
+
+
         }.bind(this));
-        this.refreshMessageCount();
+
+
     },
     refreshUsers: function() {
 
@@ -52,20 +96,20 @@ var MessengerApp = React.createClass({
     nextPage:function(){
         console.log("getting next page");
         this.pageInfo.pageNr++;
-        this.refreshMessages();
+        var f=function(){this.pageInfo.pageNr--;}.bind(this);
+        this.refreshMessages(f);
     },
     prevPage:function(){
         console.log("getting prev page");
         this.pageInfo.pageNr--;
-        this.refreshMessages();
+        var f=function(){this.pageInfo.pageNr++;}.bind(this);
+        this.refreshMessages(f);
     },
     refreshMessageCount:function(){
         messangerService.getMessageCount().then(function(data){
             var state=this.state;
             state.messageCount=data;
             state.numberOfPages=Math.ceil(state.messageCount/this.pageInfo.pageSize);
-            state.disableNext=this.pageInfo.pageNr+1>=this.state.numberOfPages;
-            state.disablePrev=this.pageInfo.pageNr===0;
             this.setState(state);
             console.log("refreshing message count: "+data);
         }.bind(this));
@@ -123,11 +167,12 @@ var MessageList = React.createClass({
                 messageListItems
             ),
             React.createElement(
-                Button,{name:"Previous Page",onClick:this.props.prevPage,disabled:this.props.disablePrev}
+                Button,{name:"Previous Page",onClick:this.props.prevPage,disabled:this.props.pageInfo.pageNr===0}
             ),
             React.createElement(
-                Button,{name:"Next Page",onClick:this.props.nextPage,disabled:this.props.disableNext}
-            )
+                Button,{name:"Next Page",onClick:this.props.nextPage,disabled:this.props.pageInfo.pageNr+1>=this.props.numberOfPages}
+            ),
+            React.createElement(PageCountIndicator, { pageNr:this.props.pageInfo.pageNr,numberOfPages:this.props.numberOfPages})
         )
     }
 
@@ -140,6 +185,33 @@ var Button = React.createClass({
         );
     }
 });
+var SelectList = React.createClass({
+    displayName: "SelectList",
+
+    render: function () {
+        var options=[];
+        for (var i = 0; i < this.props.users.length; i++) {
+            options.push(React.createElement(Option,{onClick:this.props.onClick,value:this.props.users[i].username,key:this.props.users[i].username}));
+        }
+        return React.createElement(
+            "select",
+            {id:this.props.id,onChange:this.props.onClick},
+            options
+        );
+    }
+});
+var Option = React.createClass({
+    displayName: "Option",
+    render: function () {
+
+        return React.createElement(
+            "option",
+            {value:this.props.value},
+            this.props.value
+        );
+    }
+});
+
 
 
 //$(document).ready ( function () {
@@ -237,17 +309,17 @@ var MessageForm = React.createClass({
                 React.createElement("input", { type: "content", name:"content", placeholder: "Message content",
                     value: this.state.content,
                     onChange: this.handleContentChanged }),
-                React.createElement("input", { type: "receiver", name:"receiver", placeholder: "Select Message receiver",
-                    value: this.state.receiver,
-                    onChange: this.handleReceiverChanged }),
+                React.createElement(SelectList, { id:"form_user_select",users: this.props.users,onClick:this.handleUserSelect }), // pun ca select options in form
                 React.createElement("input", { type: "submit", disabled:!model.emptyFields(this.state), value: "Send Message" })
-            ),
-            React.createElement(UserList, { users: this.props.users,onClick:this.handleUserSelect })
+            )
         );
     },
-    handleUserSelect: function (user) {
-        console.log(user.username+ ' clicked');
-        this.message.receiver=user.username;
+    handleUserSelect: function () { //da object clicked
+        var select = document.getElementById( "form_user_select" );
+        var option=select.options[ select.selectedIndex ].value;
+
+        console.log(option +" selected");
+        this.message.receiver=option;
         this.setState(this.message);
     },
     handleTitleChanged: function (event) {
@@ -259,6 +331,7 @@ var MessageForm = React.createClass({
         this.setState(this.message);
     },
     handleReceiverChanged: function (event) {
+
         this.message.receiver= event.target.value;
         this.setState(this.message);
     },
